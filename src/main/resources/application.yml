@@ -1,0 +1,81 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  health:
+    circuitbreakers:
+      enabled: 'true'
+  endpoint:
+    health:
+      show-details: always
+spring:
+  application:
+    name: circuit-breaker-pattern
+  jackson:
+    serialization:
+      indent_output: 'true'
+
+
+rest-service:
+  pin-code:
+     base-url: 'https://api.postalpincode.in'
+     timeout: 3000
+
+
+resilience4j:
+  retry:
+    instances:
+      searchPinCode:
+        maxAttempts: '3'
+        waitDuration: 2s
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientResponseException
+        ignoreExceptions:
+          - com.vks.cbp.exception.InvalidPinCodeException
+      searchPostOffice:
+        maxAttempts: '3'
+        waitDuration: 2s
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientResponseException
+        ignoreExceptions:
+          - com.vks.cbp.exception.InvalidPinCodeException
+  circuitbreaker:
+    instances:
+      searchPinCode:
+        waitDurationInOpenState: 5s
+        failureRateThreshold: '60'
+        permittedNumberOfCallsInHalfOpenState: '2'
+        automaticTransitionFromOpenToHalfOpenEnabled: 'true'
+        minimumNumberOfCalls: '3'
+        eventConsumerBufferSize: '5'
+        slidingWindowSize: '5'
+        registerHealthIndicator: 'true'
+        slowCallDurationThreshold: 5s #Calls taking longer than this duration are considered "slow" and count toward the slowCallRateThreshold.
+        slowCallRateThreshold: '50' #The percentage of slow calls that, if exceeded, contributes to opening the circuit.
+      searchPostOffice:
+        waitDurationInOpenState: 5s
+        failureRateThreshold: '70'
+        permittedNumberOfCallsInHalfOpenState: '2'
+        automaticTransitionFromOpenToHalfOpenEnabled: 'true'
+        minimumNumberOfCalls: '3'
+        eventConsumerBufferSize: '5'
+        slidingWindowSize: '5'
+        registerHealthIndicator: 'true'
+        slowCallDurationThreshold: 5s #Calls taking longer than this duration are considered "slow" and count toward the slowCallRateThreshold.
+        slowCallRateThreshold: '50' #The percentage of slow calls that, if exceeded, contributes to opening the circuit.
+    configs:
+      default:
+        waitDurationInOpenState: 7s #The duration the circuit breaker stays in the OPEN state before automatically transitioning to HALF_OPEN.
+        failureRateThreshold: '50' #The percentage of failed calls (or slow calls if slow-call-rate-threshold is also met) that will cause the circuit breaker to transition from CLOSED to OPEN.
+        permittedNumberOfCallsInHalfOpenState: '3' #The number of test calls allowed in the HALF_OPEN state to determine if the service has recovered.
+        automaticTransitionFromOpenToHalfOpenEnabled: 'true' #Determines if the transition from OPEN to HALF_OPEN should happen automatically after the wait duration.
+        minimumNumberOfCalls: '5' #The minimum number of calls that must be recorded within the sliding window before the failure rate is calculated and the circuit can be opened.
+        eventConsumerBufferSize: '10'
+        slidingWindowType: 'COUNT_BASED' #Specifies whether the sliding window is COUNT_BASED or TIME_BASED.
+        slidingWindowSize: '10' #The number of calls (count-based) or the time period (time-based) over which metrics are collected to calculate the failure rate.
+        registerHealthIndicator: 'true' #If true, a health indicator for the circuit breaker instance will be exposed via the Spring Boot Actuator endpoint (e.g., /actuator/health).
