@@ -2,6 +2,7 @@ package com.vks.cbp.exception.handler;
 
 import java.time.Instant;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.codec.DecodingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +20,7 @@ import com.vks.cbp.exception.model.ErrorResponse;
 import reactor.core.publisher.Mono;
 
 @RestControllerAdvice
+@Slf4j
 public class PostalExceptionHandler {
 
 	@ExceptionHandler({ NoSuchPinCodeException.class, NoSuchPostOfficeException.class, NoResponseException.class })
@@ -60,6 +62,7 @@ public class PostalExceptionHandler {
 	}
 
 	private Mono<ErrorResponse> buildErrorResponse(Exception ex, HttpStatus status, ServerWebExchange exchange) {
+		ex.printStackTrace();
 		ErrorResponse errorResponse = new ErrorResponse(Instant.now().toString(), status.value(),
 				status.getReasonPhrase(), ex.getMessage(), exchange.getRequest().getPath().value());
 		return Mono.just(errorResponse);

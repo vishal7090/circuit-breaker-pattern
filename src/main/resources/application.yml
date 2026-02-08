@@ -16,6 +16,9 @@ spring:
     serialization:
       indent_output: 'true'
 
+logging:
+  level:
+    io.github.resilience4j.retry: DEBUG
 
 rest-service:
   pin-code:
@@ -28,46 +31,42 @@ resilience4j:
     instances:
       searchPinCode:
         maxAttempts: '3'
-        waitDuration: 2s
+        waitDuration: 1s
         retryExceptions:
-          - java.io.IOException
-          - java.util.concurrent.TimeoutException
-          - org.springframework.web.reactive.function.client.WebClientResponseException
+          - java.lang.Exception
         ignoreExceptions:
           - com.vks.cbp.exception.InvalidPinCodeException
       searchPostOffice:
         maxAttempts: '3'
-        waitDuration: 2s
+        waitDuration: 1s
         retryExceptions:
-          - java.io.IOException
-          - java.util.concurrent.TimeoutException
-          - org.springframework.web.reactive.function.client.WebClientResponseException
+          - java.lang.Exception
         ignoreExceptions:
           - com.vks.cbp.exception.InvalidPinCodeException
   circuitbreaker:
     instances:
       searchPinCode:
-        waitDurationInOpenState: 5s
-        failureRateThreshold: '60'
+        waitDurationInOpenState: 10s
+        failureRateThreshold: '100'
         permittedNumberOfCallsInHalfOpenState: '2'
         automaticTransitionFromOpenToHalfOpenEnabled: 'true'
-        minimumNumberOfCalls: '3'
-        eventConsumerBufferSize: '5'
-        slidingWindowSize: '5'
+        minimumNumberOfCalls: '2'
+        slidingWindowType: 'COUNT_BASED'
+        slidingWindowSize: '2'
         registerHealthIndicator: 'true'
-        slowCallDurationThreshold: 5s #Calls taking longer than this duration are considered "slow" and count toward the slowCallRateThreshold.
-        slowCallRateThreshold: '50' #The percentage of slow calls that, if exceeded, contributes to opening the circuit.
+        #slowCallDurationThreshold: 3s #Calls taking longer than this duration are considered "slow" and count toward the slowCallRateThreshold.
+        #slowCallRateThreshold: '80' #The percentage of slow calls that, if exceeded, contributes to opening the circuit.
       searchPostOffice:
-        waitDurationInOpenState: 5s
-        failureRateThreshold: '70'
+        waitDurationInOpenState: 10s
+        failureRateThreshold: '50'
         permittedNumberOfCallsInHalfOpenState: '2'
         automaticTransitionFromOpenToHalfOpenEnabled: 'true'
-        minimumNumberOfCalls: '3'
-        eventConsumerBufferSize: '5'
-        slidingWindowSize: '5'
+        minimumNumberOfCalls: '2'
+        slidingWindowType: 'COUNT_BASED'
+        slidingWindowSize: '2'
         registerHealthIndicator: 'true'
-        slowCallDurationThreshold: 5s #Calls taking longer than this duration are considered "slow" and count toward the slowCallRateThreshold.
-        slowCallRateThreshold: '50' #The percentage of slow calls that, if exceeded, contributes to opening the circuit.
+        #slowCallDurationThreshold: 3s #Calls taking longer than this duration are considered "slow" and count toward the slowCallRateThreshold.
+        #slowCallRateThreshold: '80' #The percentage of slow calls that, if exceeded, contributes to opening the circuit.
     configs:
       default:
         waitDurationInOpenState: 7s #The duration the circuit breaker stays in the OPEN state before automatically transitioning to HALF_OPEN.
