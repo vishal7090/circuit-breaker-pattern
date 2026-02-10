@@ -27,6 +27,24 @@ rest-service:
 
 
 resilience4j:
+  ratelimiter:
+    instances:
+      searchPinCode:
+        limitForPeriod: 2
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+      searchPostOffice:
+        limitForPeriod: 2
+        limitRefreshPeriod: 10s
+        timeoutDuration: 5
+  bulkhead:
+    instances:
+      searchPinCode:
+        maxConcurrentCalls: 2 # Max concurrent calls allowed
+        maxWaitDuration: 0 # Max time a request waits in the queue before failing
+      searchPostOffice:
+        maxConcurrentCalls: 1
+        maxWaitDuration: 2
   retry:
     instances:
       searchPinCode:

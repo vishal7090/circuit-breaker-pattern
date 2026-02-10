@@ -3,6 +3,7 @@ package com.vks.cbp.configuration;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ClientHttpConnector;
@@ -24,7 +25,8 @@ public class PinCodeWebClientConfiguration {
 	private final PinCodeProps pinCodeProps;
 
 	@Bean
-	public WebClient webClient() {
+	@Qualifier("pinCodeWebClient")
+	public WebClient pinCodeWebClient() {
 		HttpClient httpClient = HttpClient.create()
 				// Connection Timeout: time to establish the connection (5 seconds)
 				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, pinCodeProps.timeout())
